@@ -1,9 +1,18 @@
 <script setup>
 import MenuBar from "./components/MenuBar.vue";
+import storiesBg from "./images/stories-bg.jpg";
 </script>
 
 <template>
-  <v-app :style="{ background: '#F4F4F4' }">
+  <v-app
+    :style="{
+      'background-image': `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+                  url(${storiesBg})`,
+      'background-position': 'center',
+      'background-repeat': 'no-repeat',
+      'background-size': 'cover',
+    }"
+  >
     <MenuBar :key="$route.fullPath" />
     <v-main>
       <router-view />

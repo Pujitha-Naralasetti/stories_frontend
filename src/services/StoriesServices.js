@@ -1,6 +1,9 @@
 import apiClient from "./services";
 
 export default {
+  getStoryProperties() {
+    return apiClient.get("storyProperties");
+  },
   getStories() {
     return apiClient.get("stories");
   },

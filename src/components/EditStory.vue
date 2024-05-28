@@ -1,8 +1,6 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import addIcon from "../images/add-icon.png";
-import "@vuepic/vue-datepicker/dist/main.css";
 import StoriesServices from "../services/StoriesServices.js";
 
 const route = useRoute();
@@ -38,11 +36,42 @@ const snackbar = ref({
   text: "",
 });
 
+const themes = ref([]);
+
+const genres = ref([]);
+
+const languages = ref([]);
+
 onMounted(async () => {
   if (props.storyEditId != null && props.viewType == "edit") {
     await getStory();
   }
+  await getStoryProperties();
 });
+
+async function getStoryProperties() {
+  await StoriesServices.getStoryProperties()
+    .then((response) => {
+      let tempTheme = [];
+      response.data?.data?.settings?.map(item => {
+        tempTheme.push(item?.settingName);
+      })
+      themes.value = tempTheme;
+      let tempGenre = [];
+      response.data?.data?.genres?.map(item => {
+        tempGenre.push(item?.genreName);
+      })
+      genres.value = tempGenre;
+      let tempLanguages = [];
+      response.data?.data?.languages?.map(item => {
+        tempLanguages.push(item?.languageName);
+      })
+      languages.value = tempLanguages;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
 
 async function getStory() {
   await StoriesServices.getStoryByStoryId(props.storyEditId)
@@ -98,7 +127,7 @@ async function updateStory() {
 }
 
 const removeCharacter = (storyDetails, removeItem) => {
-  let tempCharacters = [...storyDetails.charactersDetails];
+  let tempCharacters = [...storyDetails?.charactersDetails];
   storyDetails.charactersDetails = tempCharacters.filter((e) => e != removeItem);
 };
 
@@ -112,7 +141,12 @@ function closeSnackBar() {
 
 const addCharacterClick = (char) => {
   if (char.name?.length > 0 && char.role?.length > 0) {
-    storyDetails.charactersDetails?.push(char);
+    const newChar = { ...char };
+    const charDetails = {
+      ...storyDetails.value,
+      charactersDetails: [...storyDetails.value.charactersDetails, newChar]
+    };
+    storyDetails.value = charDetails;
     char.name = "";
     char.role = "";
   }
@@ -136,17 +170,15 @@ const addCharacterClick = (char) => {
                 <v-text-field class="w-100" v-model="storyDetails.title" label="Story Title*" required></v-text-field>
 
               </v-col>
-              <v-col cols="4"><v-text-field class="w-100" v-model="storyDetails.storyTheme" label="Theme*"
-                  required></v-text-field>
-
+              <v-col cols="4">
+                <v-select class="my-select" :items="themes" label="Theme*" v-model="storyDetails.storyTheme"
+                  required></v-select>
               </v-col>
-              <v-col cols="4"><v-text-field class="w-100" v-model="storyDetails.genre" label="Genre*"
-                  required></v-text-field>
-
+              <v-col cols="4">
+                <v-select :items="genres" label="Genre*" v-model="storyDetails.genre" required></v-select>
               </v-col>
-              <v-col cols="4"><v-text-field class="w-100" v-model="storyDetails.storyLaguage" label="Language*"
-                  required></v-text-field>
-
+              <v-col cols="4">
+                <v-select :items="languages" label="Language*" v-model="storyDetails.storyLaguage" required></v-select>
               </v-col>
               <v-col cols="4"><v-text-field class="w-100" v-model.number="storyDetails.storyLength" label="Max length*"
                   type="number" required></v-text-field>
@@ -162,42 +194,29 @@ const addCharacterClick = (char) => {
                   <template v-for="(character, cIndex) in storyDetails.charactersDetails" :key="{ cIndex }">
                     <v-chip class="ma-2" closable
                       @click:close="removeCharacter(storyDetails.charactersDetails, character)">
-                      {{ character?.name }} - {{ character?.role }}
+                      {{ character?.name }}(<b>{{ character?.role }}</b>)
                     </v-chip>
                   </template>
                 </p>
-                <v-row no-gutters>
+                <v-row>
                   <v-col cols="4" class="d-flex justify-start">
                     <v-responsive max-width="350">
-                      <v-text-field
-                        v-model="characterInfo.name"
-                        v-on:keyup.enter="addCharacterClick(characterInfo)"
-                        label="Enter character name.."
-                        clearable
-                      ></v-text-field>
+                      <v-text-field v-model="characterInfo.name" v-on:keyup.enter="addCharacterClick(characterInfo)"
+                        label="Enter character name.." clearable></v-text-field>
                     </v-responsive>
                   </v-col>
                   <v-col cols="4" class="d-flex justify-start">
                     <v-responsive max-width="350">
-                      <v-text-field
-                        v-model="characterInfo.role"
-                        v-on:keyup.enter="addCharacterClick(characterInfo)"
-                        label="Enter role name.."
-                        clearable
-                      ></v-text-field>
+                      <v-text-field v-model="characterInfo.role" v-on:keyup.enter="addCharacterClick(characterInfo)"
+                        label="Enter role name.." clearable></v-text-field>
                     </v-responsive>
                   </v-col>
-                  <v-col cols="1" class="d-flex mt-3"
-                    ><div @click="addCharacterClick(characterInfo)">
-                      <v-img
-                        class="mx-2"
-                        :src="addIcon"
-                        height="30"
-                        width="30"
-                        v-bind:style="{ cursor: 'pointer' }"
-                        contain
-                      ></v-img></div></v-col
-                ></v-row>
+                  <v-col cols="1" class="d-flex mt-3">
+                    <div @click="addCharacterClick(characterInfo)">
+                      <v-icon size="x-large" icon="mdi-plus-circle-outline"
+                        v-bind:style="{ cursor: 'pointer' }"></v-icon>
+                    </div>
+                  </v-col></v-row>
               </v-col>
 
             </v-row>

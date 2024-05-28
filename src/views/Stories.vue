@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted } from "vue";
 import { ref } from "vue";
-import "@vuepic/vue-datepicker/dist/main.css";
 import StoryCardComponent from "../components/StoryCardComponent.vue";
 import StoriesServices from "../services/StoriesServices.js";
 import EditStory from "../components/EditStory.vue";

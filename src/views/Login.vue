@@ -18,60 +18,63 @@ const user = ref({
   lastName: "",
   email: "",
   password: "",
+  isAdmin: false,
 });
 
 onMounted(async () => {
-  localStorage.removeItem("user");
-  // if (localStorage.getItem("user") !== null) {
-  //   router.push({ name: "recipes" });
-  // }
+  if (localStorage.getItem("user") !== null) {
+    router.push({ name: "stories" });
+  }
 });
 
 async function createAccount() {
-  // await UserServices.addUser(user.value)
-  //   .then(() => {
-  //     emailInValid.value = false;
-  //     snackbar.value.value = true;
-  //     snackbar.value.color = "green";
-  //     snackbar.value.text = "Account created successfully!";
-  //     isCreateAccount.value = false;
-  //     user.value = {
-  //       firstName: "",
-  //       lastName: "",
-  //       email: "",
-  //       password: "",
-  //     };
-  //     router.push({ name: "login" });
-  //   })
-  //   .catch((error) => {
-  //     console.log(error);
-  //     snackbar.value.value = true;
-  //     snackbar.value.color = "error";
-  //     snackbar.value.text = error.response.data.message;
-  //   });
+  await UserServices.addUser(user.value)
+    .then(() => {
+      emailInValid.value = false;
+      snackbar.value.value = true;
+      snackbar.value.color = "green";
+      snackbar.value.text = "Account created successfully!";
+      isCreateAccount.value = false;
+      user.value = {
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        isAdmin: user.value.isAdmin,
+      };
+      router.push({ name: "login" });
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    });
 }
 
 async function login() {
-  // await UserServices.loginUser(user)
-  //   .then((data) => {
-  //     window.localStorage.setItem("user", JSON.stringify(data.data));
-  //     snackbar.value.value = true;
-  //     snackbar.value.color = "green";
-  //     snackbar.value.text = "Login successful!";
-  //     user.value = {
-  //       firstName: "",
-  //       lastName: "",
-  //       email: "",
-  //       password: "",
-  //     };
-  //     router.push({ name: "stories" });
-  //   })
-  //   .catch((error) => {
-  //     console.log(error);
-  //     snackbar.value.value = true;
-  //     snackbar.value.color = "error";
-  //     snackbar.value.text = error.response.data.message;
-  //   });
+  user.value.isAdmin = loginType.value == "admin" ? true : false;
+  await UserServices.loginUser(user)
+    .then((data) => {
+      window.localStorage.setItem("user", JSON.stringify(data.data));
+      snackbar.value.value = true;
+      snackbar.value.color = "green";
+      snackbar.value.text = "Login successful!";
+      user.value = {
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        isAdmin: user.value.isAdmin,
+      };
+      router.push({ name: "stories" });
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    });
 }
 
 function openCreateAccount() {
@@ -82,6 +85,7 @@ function openCreateAccount() {
     lastName: "",
     email: "",
     password: "",
+    isAdmin: false,
   };
 }
 
@@ -93,6 +97,7 @@ function closeCreateAccount() {
     lastName: "",
     email: "",
     password: "",
+    isAdmin: false,
   };
 }
 

@@ -11,6 +11,7 @@ import storiesBg from "./images/stories-bg.jpg";
       'background-position': 'center',
       'background-repeat': 'no-repeat',
       'background-size': 'cover',
+      'color':'white',
     }"
   >
     <MenuBar :key="$route.fullPath" />

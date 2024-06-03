@@ -25,10 +25,10 @@ onMounted(async () => {
 });
 
 async function deleteStory() {
-  await StoriesServices.deleteStory(props.story.storyId)
+  await StoriesServices.deleteStory(props.story.id)
     .then((response) => {
       props.showSnackbar("green", response.data.message);
-      if (response.data.status == "success") {
+      if (response.data.status == "Success") {
         showDeleteConf.value = false;
         props.getUpdatedStories();
       }
@@ -67,40 +67,36 @@ function closeDeletePopup() {
 </script>
 
 <template>
-  <v-card class="rounded-lg elevation-5 mb-8" @click="showDetails = !showDetails">
+  <v-card class="rounded-lg elevation-5 mb-8">
     <v-card-title class="headline">
       <v-row align="center">
         <v-col>
-          {{ story.title }}
-          <!-- <v-icon start icon="mdi-airplane-takeoff"></v-icon> -->
-          {{ story.genre }}
-          <v-chip class="ma-2" color="purple-darken-2" label>
-            <v-icon start icon="mdi-account"></v-icon>
-            Max length : {{ story.storyLength }}
-          </v-chip>
+          <b>
+            {{ story.title }}</b>
+          <v-spacer></v-spacer>Genre :
+          {{ story.genre?.genreName }}
+          <v-spacer></v-spacer>
+          Max length : {{ story.storyLength }}
         </v-col>
         <v-col class="d-flex justify-end">
           <template v-if="user !== null">
-            <router-link :to="{ name: 'story', params: { id: story?.storyId } }">
+            <router-link :to="{ name: 'storyById', params: { id: story?.id } }">
               <v-icon class="mr-3" size="small" icon="mdi-eye"></v-icon>
             </router-link>
           </template>
           <template v-if="user !== null">
             <v-icon class="mr-3" size="small" icon="mdi-delete" @click="(e) => openDeletePopup(e)"></v-icon>
           </template>
-          <template v-if="user !== null">
-            <v-icon size="small" icon="mdi-pencil" @click="(e) => navigateToEdit(e)"></v-icon>
-          </template>
         </v-col>
       </v-row>
       <v-row>
         <p class="font-italic text-left">
           Characters:
-          <template v-if="props.story.charactersDetails.length == 0"><span v-bind:style="{
-            color: '#707070',
-            'font-size': '14px',
-          }">No characters available..</span></template>
-          <template v-for="(character, cIndex) in story.charactersDetails" :key="{ cIndex }">
+          <template v-if="props.story?.characters?.length == 0"><span v-bind:style="{
+              color: '#707070',
+              'font-size': '14px',
+            }">No characters available..</span></template>
+          <template v-for="(character, cIndex) in story?.characters" :key="{ cIndex }">
             <v-chip class="ma-2">
               {{ character?.name }} - {{ character?.role }}
             </v-chip>

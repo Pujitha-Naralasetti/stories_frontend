@@ -26,7 +26,7 @@ const snackbar = ref({
 
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
-  // await getStories();
+  await getStories();
 });
 
 async function getStories() {
@@ -35,8 +35,8 @@ async function getStories() {
   if (user.value !== null && user.value.id !== null) {
     await StoriesServices.getStoriesByUserId(user.value.id)
       .then((response) => {
-        stories.value = response.data;
-        constStories.value = response.data;
+        stories.value = response.data?.data;
+        constStories.value = response.data?.data;
       })
       .catch((error) => {
         console.log(error);
@@ -78,8 +78,8 @@ const onFilterChange = () => {
     let tempFilteredStories = [];
     tempFilteredStories = constStories.value.filter(
       (item) =>
-        item?.name?.toLowerCase()?.includes(filterStories.value?.toLowerCase()) ||
-        item?.countryName
+        item?.title?.toLowerCase()?.includes(filterStories.value?.toLowerCase()) ||
+        item?.genre?.genreName
           ?.toLowerCase()
           ?.includes(filterStories.value?.toLowerCase())
     );

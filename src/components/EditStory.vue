@@ -18,8 +18,8 @@ const storyDetails = ref({
   title: "",
   genre: "",
   storyLength: 100,
-  storyContent: "",
-  charactersDetails: [],
+  content: "",
+  characters: [],
   storyTheme: "",
   storyLaguage: "English",
   updatedDate: null,
@@ -81,8 +81,8 @@ async function getStory() {
         title: response.data.title,
         genre: response.data.genre,
         storyLength: response.data.storyLength,
-        storyContent: response.data.storyContent,
-        charactersDetails: response.data.charactersDetails,
+        content: response.data.content,
+        characters: response.data.characters,
         storyTheme: response.data.storyTheme,
         storyLaguage: response.data.storyLaguage,
         updatedDate: response.data.updatedDate,
@@ -97,38 +97,27 @@ async function getStory() {
 async function updateStory() {
   let payload = {
     userId: JSON.parse(localStorage.getItem("user")).id,
+    genreName: storyDetails.value?.genre,
+    languageName: storyDetails.value?.storyLaguage,
+    settingName: storyDetails.value?.storyTheme,
     ...storyDetails.value,
   };
-  if (props.viewType == "edit") {
-    await StoriesServices.updateStory(props.storyEditId, payload)
-      .then((response) => {
-        props.showSnackbar("green", response.data.message);
-        if (response.data.status == "success") {
-          props.getUpdatedStories();
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-        props.showSnackbar("error", error.message);
-      });
-  } else {
-    await StoriesServices.addStory(payload)
-      .then((response) => {
-        props.showSnackbar("green", response.data.message);
-        if (response.data.status == "success") {
-          props.getUpdatedStories();
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-        props.showSnackbar("error", error.message);
-      });
-  }
+  await StoriesServices.addStory(payload)
+    .then((response) => {
+      props.showSnackbar("green", response.data.message);
+      if (response.data.status == "Success") {
+        props.getUpdatedStories();
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      props.showSnackbar("error", error.message);
+    });
 }
 
 const removeCharacter = (storyDetails, removeItem) => {
-  let tempCharacters = [...storyDetails?.charactersDetails];
-  storyDetails.charactersDetails = tempCharacters.filter((e) => e != removeItem);
+  let tempCharacters = [...storyDetails?.characters];
+  storyDetails.characters = tempCharacters.filter((e) => e != removeItem);
 };
 
 const closeParentPopup = () => {
@@ -144,7 +133,7 @@ const addCharacterClick = (char) => {
     const newChar = { ...char };
     const charDetails = {
       ...storyDetails.value,
-      charactersDetails: [...storyDetails.value.charactersDetails, newChar]
+      characters: [...storyDetails.value.characters, newChar]
     };
     storyDetails.value = charDetails;
     char.name = "";
@@ -186,14 +175,13 @@ const addCharacterClick = (char) => {
               <v-col cols="12">
                 <p class="font-italic text-left">
                   Characters:
-                  <template v-if="storyDetails.charactersDetails.length == 0"><span v-bind:style="{
-                    color: '#707070',
-                    'font-size': '14px',
-                  }">Please enter character role and name below and click on add to
+                  <template v-if="storyDetails.characters.length == 0"><span v-bind:style="{
+        color: '#707070',
+        'font-size': '14px',
+      }">Please enter character role and name below and click on add to
                       list them..</span></template>
-                  <template v-for="(character, cIndex) in storyDetails.charactersDetails" :key="{ cIndex }">
-                    <v-chip class="ma-2" closable
-                      @click:close="removeCharacter(storyDetails.charactersDetails, character)">
+                  <template v-for="(character, cIndex) in storyDetails.characters" :key="{ cIndex }">
+                    <v-chip class="ma-2" closable @click:close="removeCharacter(storyDetails.characters, character)">
                       {{ character?.name }}(<b>{{ character?.role }}</b>)
                     </v-chip>
                   </template>
@@ -229,17 +217,17 @@ const addCharacterClick = (char) => {
         <div>
           <v-btn class="mr-3" variant="flat" color="secondary" @click="closeParentPopup()">Cancel</v-btn>
           <v-btn v-if="props.viewType == 'add'" variant="flat" color="primary" @click="updateStory()" :disabled="!storyDetails?.title ||
-            !storyDetails?.genre ||
-            !storyDetails?.storyTheme ||
-            !storyDetails?.storyLaguage ||
-            !storyDetails?.storyLength
-            ">Add Story</v-btn>
+        !storyDetails?.genre ||
+        !storyDetails?.storyTheme ||
+        !storyDetails?.storyLaguage ||
+        !storyDetails?.storyLength
+        ">Add Story</v-btn>
           <v-btn v-else variant="flat" color="primary" @click="updateStory()" :disabled="!storyDetails?.title ||
-            !storyDetails?.genre ||
-            !storyDetails?.storyTheme ||
-            !storyDetails?.storyLaguage ||
-            !storyDetails?.storyLength
-            ">Update Story</v-btn>
+        !storyDetails?.genre ||
+        !storyDetails?.storyTheme ||
+        !storyDetails?.storyLaguage ||
+        !storyDetails?.storyLength
+        ">Update Story</v-btn>
         </div>
       </v-col>
     </v-row>

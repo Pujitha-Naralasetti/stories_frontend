@@ -19,8 +19,9 @@ const snackbar = ref({
     text: "",
 });
 
-const longStringContent = ref("");
-const story = ref({id: null,
+const longStringContent = ref(``);
+const story = ref({
+    id: null,
     title: "",
     genre: null,
     storyLength: null,
@@ -28,17 +29,18 @@ const story = ref({id: null,
     characters: [],
     storyTheme: null,
     storyLaguage: null,
-    updatedDate: null,});
+    updatedDate: null,
+});
 
 onMounted(async () => {
     user.value = JSON.parse(localStorage.getItem("user"));
-    //   await getStory(router?.params?.id);
+    await getStory(router?.params?.id);
 });
 
 async function getStory(storyId) {
-    await StoriesServices.getStoryByStoryId(StoryId)
+    await StoriesServices.getStoryByStoryId(storyId)
         .then((response) => {
-            story.value = response?.data;
+            story.value = response?.data?.data;
         })
         .catch((error) => {
             console.log(error);
@@ -55,10 +57,10 @@ async function getStory(storyId) {
             <v-card-title>{{ story.title }}</v-card-title>
             <v-card-subtitle>{{ story.genre?.genreName }}</v-card-subtitle>
             <v-card-text>
-                <div class="long-content">{{ longStringContent }}</div>
+                <div class="long-content">{{ story?.content }}</div>
             </v-card-text>
             <v-card-actions>
-                <v-btn class="mr-3" variant="flat" color="secondary">Close</v-btn>
+                <v-btn class="mr-3" variant="flat" color="secondary" :to="{ name: 'stories' }">Back</v-btn>
             </v-card-actions>
         </v-card>
     </v-container>

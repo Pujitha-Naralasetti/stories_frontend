@@ -71,9 +71,10 @@ function closeDeletePopup() {
     <v-card-title class="headline">
       <v-row align="center">
         <v-col>
-          {{ story.title }}
+          {{ story.title }} /
           <!-- <v-icon start icon="mdi-airplane-takeoff"></v-icon> -->
-          {{ story.genre }}
+          <i>Genre :</i>
+          {{ story.genre?.genreName }}
           <v-chip class="ma-2" color="purple-darken-2" label>
             <v-icon start icon="mdi-account"></v-icon>
             Max length : {{ story.storyLength }}
@@ -81,7 +82,7 @@ function closeDeletePopup() {
         </v-col>
         <v-col class="d-flex justify-end">
           <template v-if="user !== null">
-            <router-link :to="{ name: 'story', params: { id: story?.storyId } }">
+            <router-link :to="{ name: 'storyById', params: { id: story?.id } }">
               <v-icon class="mr-3" size="small" icon="mdi-eye"></v-icon>
             </router-link>
           </template>

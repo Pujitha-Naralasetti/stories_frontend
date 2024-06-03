@@ -94,41 +94,25 @@ const onFilterChange = () => {
   <v-container>
     <div id="body">
       <v-row align="center" class="mb-4">
-        <v-col cols="10"
-          ><v-card-title class="pl-0 text-h4 font-weight-bold"
-            >Stories
+        <v-col cols="10"><v-card-title class="pl-0 text-h4 font-weight-bold">Stories
           </v-card-title>
         </v-col>
         <v-col class="d-flex justify-end" cols="2">
-            <v-btn color="accent" @click="openAdd()">Generate Story</v-btn>
+          <v-btn color="accent" @click="openAdd()">Generate Story</v-btn>
         </v-col>
       </v-row>
       <v-row>
         <v-col>
-          <v-text-field
-            v-if="constStories.length > 0"
-            v-model="filterStories"
-            append-icon="mdi-magnify"
-            v-bind:style="{
-              marginBottom: '10px',
-              backgroundColor: 'rgba(186, 186, 203, 0.82)',
-            }"
-            label="Search by story heading / genre name..."
-            @input="onFilterChange"
-            single-line
-            hide-details
-          ></v-text-field>
+          <v-text-field v-if="constStories.length > 0" v-model="filterStories" append-icon="mdi-magnify" v-bind:style="{
+            marginBottom: '10px',
+            backgroundColor: 'rgba(186, 186, 203, 0.82)',
+          }" label="Search by story heading / genre name..." @input="onFilterChange" single-line
+            hide-details></v-text-field>
         </v-col>
       </v-row>
       <template v-if="stories?.length > 0">
-        <StoryCardComponent
-          v-for="story in stories"
-          :key="story.id"
-          :story="story"
-          :openEditPopup="openEditPopup"
-          :getUpdatedStories="getStories"
-          :showSnackbar="showSnackbar"
-        />
+        <StoryCardComponent v-for="story in stories" :key="story.id" :story="story" :openEditPopup="openEditPopup"
+          :getUpdatedStories="getStories" :showSnackbar="showSnackbar" />
       </template>
       <template v-else>
         <p class="font-italic text-center">No Stories found...</p>
@@ -136,24 +120,15 @@ const onFilterChange = () => {
 
       <v-dialog persistent v-model="isAdd" width="1080">
         <v-card color="#232323" class="rounded-lg elevation-5">
-          <EditStory
-            :viewType="viewType"
-            :storyEditId="storyEditId"
-            :getUpdatedStories="getStories"
-            :closePopupEvent="closeAdd"
-            :showSnackbar="showSnackbar"
-          ></EditStory>
+          <EditStory :viewType="viewType" :storyEditId="storyEditId" :getUpdatedStories="getStories"
+            :closePopupEvent="closeAdd" :showSnackbar="showSnackbar"></EditStory>
         </v-card>
       </v-dialog>
       <v-snackbar v-model="snackbar.value" rounded="pill">
         {{ snackbar.text }}
 
         <template v-slot:actions>
-          <v-btn
-            :color="snackbar.color"
-            variant="text"
-            @click="closeSnackBar()"
-          >
+          <v-btn :color="snackbar.color" variant="text" @click="closeSnackBar()">
             Close
           </v-btn>
         </template>

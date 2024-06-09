@@ -18,7 +18,6 @@ const user = ref({
   lastName: "",
   email: "",
   password: "",
-  isAdmin: false,
 });
 
 onMounted(async () => {
@@ -40,7 +39,6 @@ async function createAccount() {
         lastName: "",
         email: "",
         password: "",
-        isAdmin: user.value.isAdmin,
       };
       router.push({ name: "login" });
     })
@@ -53,7 +51,6 @@ async function createAccount() {
 }
 
 async function login() {
-  user.value.isAdmin = loginType.value == "admin" ? true : false;
   await UserServices.loginUser(user)
     .then((data) => {
       window.localStorage.setItem("user", JSON.stringify(data.data));
@@ -65,7 +62,6 @@ async function login() {
         lastName: "",
         email: "",
         password: "",
-        isAdmin: user.value.isAdmin,
       };
       router.push({ name: "stories" });
     })
@@ -85,7 +81,6 @@ function openCreateAccount() {
     lastName: "",
     email: "",
     password: "",
-    isAdmin: false,
   };
 }
 
@@ -97,7 +92,6 @@ function closeCreateAccount() {
     lastName: "",
     email: "",
     password: "",
-    isAdmin: false,
   };
 }
 
@@ -155,10 +149,10 @@ function onEmailChange() {
             <v-spacer></v-spacer>
             <v-btn @click="closeCreateAccount()">Close</v-btn>
             <v-btn variant="outlined" :disabled="emailInValid ||
-              !user.email ||
-              !user.password ||
-              !user.firstName ||
-              !user.lastName" @click="createAccount()">Create Account</v-btn>
+            !user.email ||
+            !user.password ||
+            !user.firstName ||
+            !user.lastName" @click="createAccount()">Create Account</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>

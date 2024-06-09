@@ -1,4 +1,14 @@
-aws-deploy:
+name: AWS DEPLOY TO STAGING
+
+# turn off deploy to AWS
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - development
+
+jobs:
+  aws-deploy:
     runs-on: ubuntu-latest
     #For google auth
 

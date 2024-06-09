@@ -27,10 +27,12 @@ onMounted(async () => {
 async function deleteStory() {
   await StoriesServices.deleteStory(props.story.id)
     .then((response) => {
-      props.showSnackbar("green", response.data.message);
       if (response.data.status == "Success") {
+        props.showSnackbar("green", response.data.message);
         showDeleteConf.value = false;
         props.getUpdatedStories();
+      } else {
+        props.showSnackbar("error", response.data.message);
       }
     })
     .catch((error) => {
@@ -80,8 +82,13 @@ function closeDeletePopup() {
         </v-col>
         <v-col class="d-flex justify-end">
           <template v-if="user !== null">
-            <router-link :to="{ name: 'storyById', params: { id: story?.id } }">
+            <router-link :to="{ name: 'storyViewById', params: { id: story?.id } }">
               <v-icon class="mr-3" size="small" icon="mdi-eye"></v-icon>
+            </router-link>
+          </template>
+          <template v-if="user !== null">
+            <router-link :to="{ name: 'storyEditById', params: { id: story?.id } }">
+              <v-icon class="mr-3" size="small" icon="mdi-pencil"></v-icon>
             </router-link>
           </template>
           <template v-if="user !== null">

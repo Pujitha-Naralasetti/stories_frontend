@@ -1,9 +1,10 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import StoriesServices from "../services/StoriesServices";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 const router = useRoute();
+const route = useRouter();
 
 const user = ref({
     email: "",
@@ -20,12 +21,14 @@ const snackbar = ref({
 });
 
 const longStringContent = ref(``);
+
+const accessType = ref("");
 const story = ref({
     id: null,
     title: "",
     genre: null,
     storyLength: null,
-    content: ``,
+    content: "",
     characters: [],
     storyTheme: null,
     storyLaguage: null,
@@ -33,6 +36,8 @@ const story = ref({
 });
 
 onMounted(async () => {
+    const pathName = router.path;
+    accessType.value = pathName.startsWith("/Story/view/") ? "view" : "edit";
     user.value = JSON.parse(localStorage.getItem("user"));
     await getStory(router?.params?.id);
 });
@@ -50,6 +55,33 @@ async function getStory(storyId) {
         });
 }
 
+async function updateStory() {
+    await StoriesServices.updateStory(story?.value?.id, story.value)
+        .then((response) => {
+            if (response.data.status === "Success") {
+                showSnackbar("green", response.data.message);
+                route.push({ name: "stories" });
+            } else {
+                showSnackbar("error", response.data.message);
+            }
+        })
+        .catch((error) => {
+            console.log(error);
+            snackbar.value.value = true;
+            snackbar.value.color = "error";
+            snackbar.value.text = error.response.data.message;
+        });
+}
+
+function closeSnackBar() {
+    snackbar.value.value = false;
+}
+
+const showSnackbar = (color, msg) => {
+    snackbar.value.value = true;
+    snackbar.value.color = color;
+    snackbar.value.text = msg;
+};
 </script>
 <template>
     <v-container>
@@ -57,13 +89,29 @@ async function getStory(storyId) {
             <v-card-title>{{ story.title }}</v-card-title>
             <v-card-subtitle>{{ story.genre?.genreName }}</v-card-subtitle>
             <v-card-text>
-                <div class="long-content">{{ story?.content }}</div>
+                <template v-if="accessType === 'edit'">
+                    <v-textarea v-model="story.content" label="Content" rows="10" outlined></v-textarea>
+                </template>
+                <template v-else>
+                    <div class="long-content">{{ story?.content }}</div>
+                </template>
             </v-card-text>
             <v-card-actions>
                 <v-btn class="mr-3" variant="flat" color="secondary" :to="{ name: 'stories' }">Back</v-btn>
+                <v-btn v-if="accessType === 'edit'" variant="flat" color="primary" @click="updateStory()"
+                    :disabled="!story?.content">Update Content</v-btn>
             </v-card-actions>
         </v-card>
     </v-container>
+    <v-snackbar v-model="snackbar.value" rounded="pill">
+        {{ snackbar.text }}
+
+        <template v-slot:actions>
+            <v-btn :color="snackbar.color" variant="text" @click="closeSnackBar()">
+                Close
+            </v-btn>
+        </template>
+    </v-snackbar>
 </template>
 
 <style scoped>

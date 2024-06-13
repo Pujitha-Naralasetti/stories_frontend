@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 import StoriesServices from "../services/StoriesServices";
 import { useRoute, useRouter } from "vue-router";
+import axios from "axios";
 
 const router = useRoute();
 const route = useRouter();
@@ -73,6 +74,24 @@ async function updateStory() {
         });
 }
 
+async function generatePDF() {
+    try {
+        const response = await axios.get(`http://localhost/storiesapi/stories/generatePDF/${story.value.id}`, {
+            responseType: 'blob',
+        });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${story.value.title}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    } catch (error) {
+        console.log(error);
+        showSnackbar('error', 'Failed to generate PDF');
+    }
+}
+
 function closeSnackBar() {
     snackbar.value.value = false;
 }
@@ -86,7 +105,16 @@ const showSnackbar = (color, msg) => {
 <template>
     <v-container>
         <v-card class="rounded-lg elevation-5" color="#232323" dark>
-            <v-card-title>{{ story.title }}</v-card-title>
+            <v-card-title>
+                <v-row align="center" justify="space-between">
+                    <v-col cols="auto">
+                        <span>{{ story.title }}</span>
+                    </v-col>
+                    <v-col cols="auto">
+                        <v-btn color="primary" @click="generatePDF">Generate PDF</v-btn>
+                    </v-col>
+                </v-row>
+            </v-card-title>
             <v-card-subtitle>{{ story.genre?.genreName }}</v-card-subtitle>
             <v-card-text>
                 <template v-if="accessType === 'edit'">

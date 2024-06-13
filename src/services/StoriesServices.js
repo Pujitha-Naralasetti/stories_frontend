@@ -22,4 +22,7 @@ export default {
   deleteStory(storyId) {
     return apiClient.delete("stories/" + storyId);
   },
+  generateSequel(storyId) {
+    return apiClient.get("stories/generateSequel/" + storyId);
+  },
 };

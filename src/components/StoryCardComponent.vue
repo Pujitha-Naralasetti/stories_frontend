@@ -41,21 +41,20 @@ async function deleteStory() {
     });
 }
 
-function navigateToEdit(e) {
-  e?.stopPropagation();
-  props.openEditPopup(props.story.storyId);
-}
-
-function getFormattedDate(date) {
-  date = new Date(date);
-  let year = date.getFullYear();
-  let month = (1 + date.getMonth()).toString();
-  month = month.length > 1 ? month : "0" + month;
-
-  let day = date.getDate().toString();
-  day = day.length > 1 ? day : "0" + day;
-
-  return month + "/" + day + "/" + year;
+async function generateSequel() {
+  await StoriesServices.generateSequel(props.story.id)
+    .then((response) => {
+      if (response.data.status == "Success") {
+        props.showSnackbar("green", response.data.message);
+        props.getUpdatedStories();
+      } else {
+        props.showSnackbar("error", response.data.message);
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      props.showSnackbar("error", error.message);
+    });
 }
 
 function openDeletePopup(e) {
@@ -96,19 +95,24 @@ function closeDeletePopup() {
           </template>
         </v-col>
       </v-row>
-      <v-row>
-        <p class="font-italic text-left">
-          Characters:
-          <template v-if="props.story?.characters?.length == 0"><span v-bind:style="{
+      <v-row align="center" justify="space-between">
+        <v-col cols="auto">
+          <p class="font-italic text-left">
+            Characters:
+            <template v-if="props.story?.characters?.length == 0"><span v-bind:style="{
               color: '#707070',
               'font-size': '14px',
             }">No characters available..</span></template>
-          <template v-for="(character, cIndex) in story?.characters" :key="{ cIndex }">
-            <v-chip class="ma-2">
-              {{ character?.name }} - {{ character?.role }}
-            </v-chip>
-          </template>
-        </p>
+            <template v-for="(character, cIndex) in story?.characters" :key="{ cIndex }">
+              <v-chip class="ma-2">
+                {{ character?.name }} - {{ character?.role }}
+              </v-chip>
+            </template>
+          </p>
+        </v-col>
+        <v-col cols="auto">
+          <v-btn color="primary" @click="generateSequel">Generate Sequel</v-btn>
+        </v-col>
       </v-row>
     </v-card-title>
   </v-card>

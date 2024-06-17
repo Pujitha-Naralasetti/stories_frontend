@@ -6,6 +6,7 @@ import UserServices from "../services/UserServices.js";
 const router = useRouter();
 
 const isEditProfile = ref(false);
+const showDeleteConf = ref(false);
 const emailInValid = ref(false);
 const user = ref({
     id: "",
@@ -45,10 +46,38 @@ async function getUser(userId) {
         });
 }
 
+async function deactiveAccount() {
+    await UserServices.deactivateUser(user.value?.id)
+        .then((response) => {
+            if (response.data.status === "Success") {
+                showDeleteConf.value = false;
+                showSnackbar("green", response.data.message);
+                setTimeout(() => {
+                    localStorage.removeItem("user");
+                    user.value = null;
+                    router.push({ name: "login" });
+                }, 2000);
+            } else {
+                showSnackbar("error", response.data.message);
+            }
+        })
+        .catch((error) => {
+            console.log(error);
+            snackbar.value.value = true;
+            snackbar.value.color = "error";
+            snackbar.value.text = error.response.data.message;
+        });
+}
+
 async function updateUser() {
     await UserServices.updateUser(user?.value?.id, user.value)
         .then((response) => {
             if (response.data.status === "Success") {
+                let storedUser = JSON.parse(localStorage.getItem("user"));
+                storedUser.firstName = user?.value?.firstName;
+                storedUser.lastName = user?.value?.lastName;
+                storedUser.email = user?.value?.email;
+                window.localStorage.setItem("user", JSON.stringify(storedUser));
                 showSnackbar("green", response.data.message);
                 getUser(user.value?.id);
             } else {
@@ -96,6 +125,15 @@ function onEmailChange() {
     }
 }
 
+function openDeletePopup(e) {
+    e?.stopPropagation();
+    showDeleteConf.value = true;
+}
+
+function closeDeletePopup() {
+    showDeleteConf.value = false;
+}
+
 </script>
 <template>
     <v-container>
@@ -106,6 +144,7 @@ function onEmailChange() {
                         <span>Profile</span>
                     </v-col>
                     <v-col cols="auto">
+                        <v-btn class="mr-3" variant="flat" color="secondary" :to="{ name: 'stories' }">Back</v-btn>
                         <v-btn color="primary" @click="openEditProfile">Edit</v-btn>
                     </v-col>
                 </v-row>
@@ -127,6 +166,15 @@ function onEmailChange() {
                     </v-col>
                 </v-row>
             </v-card-text>
+            <v-card-actions>
+                <v-row align="center" justify="center">
+                    <v-col cols="auto">
+                        <v-btn variant="flat" color="red" @click="(e) => openDeletePopup(e)"
+                            :disabled="!user?.id">Deactivate
+                            Account</v-btn>
+                    </v-col>
+                </v-row>
+            </v-card-actions>
         </v-card>
     </v-container>
     <v-dialog persistent v-model="isEditProfile" width="700">
@@ -149,6 +197,21 @@ function onEmailChange() {
                             !user.lastName" @click="updateUser()">Update Profile</v-btn>
             </v-card-actions>
         </v-card>
+    </v-dialog>
+    <v-dialog persistent v-model="showDeleteConf" width="600">
+        <v-container>
+            <v-card class="rounded-lg elevation-5">
+                <div class="pb-2 pl-5 pt-5 pr-5">Are you sure want to deactivate the user?
+                    <v-row class="mt-3">
+                        <v-col class="d-flex justify-end">
+                            <v-btn class="mr-3" variant="flat" color="secondary"
+                                @click="closeDeletePopup()">Cancel</v-btn>
+                            <v-btn variant="flat" color="primary" @click="deactiveAccount()">Confirm</v-btn>
+                        </v-col>
+                    </v-row>
+                </div>
+            </v-card>
+        </v-container>
     </v-dialog>
     <v-snackbar v-model="snackbar.value" rounded="pill">
         {{ snackbar.text }}

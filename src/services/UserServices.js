@@ -29,4 +29,7 @@ export default {
   updateUser(userId, user) {
     return apiClient.put("users/" + userId, user);
   },
+  deactivateUser(userId) {
+    return apiClient.delete("users/" + userId);
+  },
 };

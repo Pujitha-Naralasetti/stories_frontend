@@ -23,6 +23,11 @@ const router = createRouter({
       name: "storyEditById",
       component: () => import("./views/StoryById.vue"),
     },
+    {
+      path: "/Profile",
+      name: "profile",
+      component: () => import("./views/Profile.vue"),
+    },
   ],
 });
 

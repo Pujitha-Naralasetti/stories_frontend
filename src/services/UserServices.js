@@ -23,4 +23,10 @@ export default {
   logoutUser() {
     return apiClient.post("logout");
   },
+  getUserById(userId) {
+    return apiClient.get("users/" + userId);
+  },
+  updateUser(userId, user) {
+    return apiClient.put("users/" + userId, user);
+  },
 };

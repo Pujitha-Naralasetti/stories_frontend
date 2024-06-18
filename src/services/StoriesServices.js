@@ -23,6 +23,9 @@ export default {
     return apiClient.delete("stories/" + storyId);
   },
   generateSequel(storyId) {
-    return apiClient.get("stories/generateSequel/" + storyId);
-  },
+    return apiClient.get("stories/generateSequel/" + storyId);
+  },
+  characterSuggestions(userId) {
+    return apiClient.get("stories/characterSuggestions/" + userId);
+  },
 };

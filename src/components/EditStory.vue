@@ -1,13 +1,9 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
 import StoriesServices from "../services/StoriesServices.js";
 
-const route = useRoute();
-
 const props = defineProps({
-  viewType: String,
-  storyEditId: null,
+  userId: null,
   getUpdatedStories: Function,
   closePopupEvent: Function,
   showSnackbar: Function,
@@ -26,9 +22,13 @@ const storyDetails = ref({
 });
 
 const characterInfo = ref({
+  id: null,
   name: "",
   role: "",
 });
+
+const previousCharacters = ref([]);
+const selectedPeople = ref([]);
 
 const snackbar = ref({
   value: false,
@@ -37,16 +37,12 @@ const snackbar = ref({
 });
 
 const themes = ref([]);
-
 const genres = ref([]);
-
 const languages = ref([]);
 
 onMounted(async () => {
-  if (props.storyEditId != null && props.viewType == "edit") {
-    await getStory();
-  }
   await getStoryProperties();
+  await getCharacterSuggestions();
 });
 
 async function getStoryProperties() {
@@ -73,34 +69,24 @@ async function getStoryProperties() {
     });
 }
 
-async function getStory() {
-  await StoriesServices.getStoryByStoryId(props.storyEditId)
+async function getCharacterSuggestions() {
+  await StoriesServices.characterSuggestions(props?.userId)
     .then((response) => {
-      let tempStory = {
-        storyId: response.data.storyId,
-        title: response.data.title,
-        genre: response.data.genre,
-        storyLength: response.data.storyLength,
-        content: response.data.content,
-        characters: response.data.characters,
-        storyTheme: response.data.storyTheme,
-        storyLaguage: response.data.storyLaguage,
-        updatedDate: response.data.updatedDate,
-      };
-      storyDetails.value = tempStory;
+      previousCharacters.value = response.data?.data;
     })
     .catch((error) => {
       console.log(error);
     });
 }
 
-async function updateStory() {
+async function addStory() {
   let payload = {
     userId: JSON.parse(localStorage.getItem("user")).id,
     genreName: storyDetails.value?.genre,
     languageName: storyDetails.value?.storyLaguage,
     settingName: storyDetails.value?.storyTheme,
     ...storyDetails.value,
+    characters: [...storyDetails.value.characters, ...selectedPeople.value]
   };
   await StoriesServices.addStory(payload)
     .then((response) => {
@@ -115,10 +101,8 @@ async function updateStory() {
     });
 }
 
-const removeCharacter = (storyDetails, removeItem) => {
-  let tempCharacters = [...storyDetails?.characters];
-  storyDetails.characters = tempCharacters.filter((e) => e != removeItem);
-};
+function removeCharacter(removeItem) {
+}
 
 const closeParentPopup = () => {
   props.closePopupEvent();
@@ -131,23 +115,20 @@ function closeSnackBar() {
 const addCharacterClick = (char) => {
   if (char.name?.length > 0 && char.role?.length > 0) {
     const newChar = { ...char };
-    const charDetails = {
-      ...storyDetails.value,
-      characters: [...storyDetails.value.characters, newChar]
-    };
-    storyDetails.value = charDetails;
+    storyDetails.value.characters.push(newChar);
     char.name = "";
     char.role = "";
   }
-};
+}
 </script>
+
+
 
 <template>
   <v-container>
     <v-row align="center">
-      <v-col cols="10"><v-card-title class="pl-0 text-h4 font-weight-bold">{{ props.viewType == "add" ? "Add" : "Edit"
-          }} Story
-        </v-card-title>
+      <v-col cols="10">
+        <v-card-title class="pl-0 text-h4 font-weight-bold">Add Story</v-card-title>
       </v-col>
     </v-row>
     <v-row>
@@ -157,7 +138,6 @@ const addCharacterClick = (char) => {
             <v-row align="center">
               <v-col cols="4">
                 <v-text-field class="w-100" v-model="storyDetails.title" label="Story Title*" required></v-text-field>
-
               </v-col>
               <v-col cols="4">
                 <v-select class="my-select" :items="themes" label="Theme*" v-model="storyDetails.storyTheme"
@@ -169,19 +149,20 @@ const addCharacterClick = (char) => {
               <v-col cols="4">
                 <v-select :items="languages" label="Language*" v-model="storyDetails.storyLaguage" required></v-select>
               </v-col>
-              <v-col cols="4"><v-text-field class="w-100" v-model.number="storyDetails.storyLength" label="Max length*"
-                  type="number" required></v-text-field>
+              <v-col cols="4">
+                <v-text-field class="w-100" v-model.number="storyDetails.storyLength" label="Max length*" type="number"
+                  required></v-text-field>
               </v-col>
               <v-col cols="12">
                 <p class="font-italic text-left">
-                  Characters:
-                  <template v-if="storyDetails.characters.length == 0"><span v-bind:style="{
-        color: '#707070',
-        'font-size': '14px',
-      }">Please enter character role and name below and click on add to
-                      list them..</span></template>
-                  <template v-for="(character, cIndex) in storyDetails.characters" :key="{ cIndex }">
-                    <v-chip class="ma-2" closable @click:close="removeCharacter(storyDetails.characters, character)">
+                  New Characters:
+                  <template v-if="storyDetails.characters.length == 0">
+                    <span v-bind:style="{ color: '#707070', 'font-size': '14px' }">
+                      Please enter character role and name below and click on add to list them..
+                    </span>
+                  </template>
+                  <template v-for="(character, cIndex) in storyDetails.characters" :key="cIndex">
+                    <v-chip class="ma-2" closable @click:close="removeCharacter(character)">
                       {{ character?.name }}(<b>{{ character?.role }}</b>)
                     </v-chip>
                   </template>
@@ -204,9 +185,34 @@ const addCharacterClick = (char) => {
                       <v-icon size="x-large" icon="mdi-plus-circle-outline"
                         v-bind:style="{ cursor: 'pointer' }"></v-icon>
                     </div>
-                  </v-col></v-row>
+                  </v-col>
+                </v-row>
               </v-col>
-
+              <v-col cols="12">
+                <p class="font-italic text-left">
+                  Previous Characters:
+                  <template v-if="previousCharacters.length == 0">
+                    <span v-bind:style="{ color: '#707070', 'font-size': '14px' }">
+                      No previous characters found...
+                    </span>
+                  </template>
+                  <template v-else>
+                    <span v-bind:style="{ color: '#707070', 'font-size': '14px' }">
+                      Select characters from previous stories which you used...
+                    </span>
+                  </template>
+                </p>
+                <v-row>
+                  <v-col cols="auto">
+                    <v-checkbox v-for="person in previousCharacters" :value="person" v-model="selectedPeople"
+                      :key="person.id">
+                      <template v-slot:label>
+                        <span>{{ person.name }}<b>({{ person.role }})</b></span>
+                      </template>
+                    </v-checkbox>
+                  </v-col>
+                </v-row>
+              </v-col>
             </v-row>
           </v-card-text>
         </v-card>
@@ -216,28 +222,16 @@ const addCharacterClick = (char) => {
       <v-col class="d-flex flex-row-reverse">
         <div>
           <v-btn class="mr-3" variant="flat" color="secondary" @click="closeParentPopup()">Cancel</v-btn>
-          <v-btn v-if="props.viewType == 'add'" variant="flat" color="primary" @click="updateStory()" :disabled="!storyDetails?.title ||
-        !storyDetails?.genre ||
-        !storyDetails?.storyTheme ||
-        !storyDetails?.storyLaguage ||
-        !storyDetails?.storyLength
-        ">Add Story</v-btn>
-          <v-btn v-else variant="flat" color="primary" @click="updateStory()" :disabled="!storyDetails?.title ||
-        !storyDetails?.genre ||
-        !storyDetails?.storyTheme ||
-        !storyDetails?.storyLaguage ||
-        !storyDetails?.storyLength
-        ">Update Story</v-btn>
+          <v-btn variant="flat" color="primary" @click="addStory()"
+            :disabled="!storyDetails?.title || !storyDetails?.genre || !storyDetails?.storyTheme || !storyDetails?.storyLaguage || !storyDetails?.storyLength">Add
+            Story</v-btn>
         </div>
       </v-col>
     </v-row>
     <v-snackbar v-model="snackbar.value" rounded="pill">
       {{ snackbar.text }}
-
       <template v-slot:actions>
-        <v-btn :color="snackbar.color" variant="text" @click="closeSnackBar()">
-          Close
-        </v-btn>
+        <v-btn :color="snackbar.color" variant="text" @click="closeSnackBar()">Close</v-btn>
       </template>
     </v-snackbar>
   </v-container>

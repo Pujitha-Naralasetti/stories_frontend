@@ -7,9 +7,7 @@ import EditStory from "../components/EditStory.vue";
 
 const stories = ref([]);
 const constStories = ref([]);
-const viewType = ref("add");
 const filterStories = ref("");
-const storyEditId = ref(null);
 const isAdd = ref(false);
 const user = ref({
   email: "",
@@ -31,7 +29,6 @@ onMounted(async () => {
 
 async function getStories() {
   isAdd.value = false;
-  storyEditId.value = null;
   if (user.value !== null && user.value.id !== null) {
     await StoriesServices.getStoriesByUserId(user.value.id)
       .then((response) => {
@@ -48,13 +45,11 @@ async function getStories() {
 }
 
 function openAdd() {
-  viewType.value = "add";
   isAdd.value = true;
 }
 
 function closeAdd() {
   isAdd.value = false;
-  storyEditId.value = null;
 }
 
 function closeSnackBar() {
@@ -65,12 +60,6 @@ const showSnackbar = (color, msg) => {
   snackbar.value.value = true;
   snackbar.value.color = color;
   snackbar.value.text = msg;
-};
-
-const openEditPopup = (id) => {
-  viewType.value = "edit";
-  storyEditId.value = id;
-  isAdd.value = true;
 };
 
 const onFilterChange = () => {
@@ -111,8 +100,8 @@ const onFilterChange = () => {
         </v-col>
       </v-row>
       <template v-if="stories?.length > 0">
-        <StoryCardComponent v-for="story in stories" :key="story.id" :story="story" :openEditPopup="openEditPopup"
-          :getUpdatedStories="getStories" :showSnackbar="showSnackbar" />
+        <StoryCardComponent v-for="story in stories" :key="story.id" :story="story" :getUpdatedStories="getStories"
+          :showSnackbar="showSnackbar" />
       </template>
       <template v-else>
         <p class="font-italic text-center">No Stories found...</p>
@@ -120,8 +109,9 @@ const onFilterChange = () => {
 
       <v-dialog persistent v-model="isAdd" width="1080">
         <v-card color="#232323" class="rounded-lg elevation-5">
-          <EditStory :viewType="viewType" :storyEditId="storyEditId" :getUpdatedStories="getStories"
-            :closePopupEvent="closeAdd" :showSnackbar="showSnackbar"></EditStory>
+          <EditStory :userId="user?.id" :getUpdatedStories="getStories" :closePopupEvent="closeAdd"
+            :showSnackbar="showSnackbar">
+          </EditStory>
         </v-card>
       </v-dialog>
       <v-snackbar v-model="snackbar.value" rounded="pill">

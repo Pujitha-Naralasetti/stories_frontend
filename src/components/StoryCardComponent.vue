@@ -6,14 +6,12 @@ import StoriesServices from "../services/StoriesServices";
 const router = useRouter();
 
 const showDeleteConf = ref(false);
-const showDetails = ref(false);
 const user = ref(null);
 
 const props = defineProps({
   story: {
     required: true,
   },
-  openEditPopup: Function,
   getUpdatedStories: Function,
   showSnackbar: Function,
   openDeletePopup: Function,
